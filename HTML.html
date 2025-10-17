@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Periodic Table</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .table {
+    display: grid;
+    grid-template-columns: repeat(18, 60px);
+    grid-auto-rows: 60px;
+    gap: 6px;
+    justify-content: center;
+  }
+  .element {
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #000;
+    padding: 4px;
+    cursor: pointer;
+    position: relative;
+  }
+  .element span {
+    display: block;
+  }
+  .element .number {
+    font-size: 10px;
+    color: #444;
+  }
+  .element .symbol {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  /* Categories */
+  .alkali { background-color: #ffd27f; }
+  .alkaline { background-color: #ffe8a0; }
+  .transition { background-color: #b9c4f9; }
+  .metalloid { background-color: #fff69b; }
+  .halogen { background-color: #9fffb9; }
+  .noble { background-color: #b4f1ff; }
+  .lanthanoid { background-color: #d7baff; }
+  .actinoid { background-color: #ffb0b0; }
+  .othermetal { background-color: #d4d4d4; }
+  .nonmetal { background-color: #f7b6ad; }
+
+  .element:hover::after {
+    content: attr(data-name) " (" attr(data-atomic) ")";
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<h1>Interactive Periodic Table of the Elements</h1>
+<div class="table" id="periodicTable"></div>
+
+<script>
+const elements = [
+{number:1,symbol:"H",name:"Hydrogen",group:1,period:1,category:"nonmetal"},
+{number:2,symbol:"He",name:"Helium",group:18,period:1,category:"noble"},
+{number:3,symbol:"Li",name:"Lithium",group:1,period:2,category:"alkali"},
+{number:4,symbol:"Be",name:"Beryllium",group:2,period:2,category:"alkaline"},
+{number:5,symbol:"B",name:"Boron",group:13,period:2,category:"metalloid"},
+{number:6,symbol:"C",name:"Carbon",group:14,period:2,category:"nonmetal"},
+{number:7,symbol:"N",name:"Nitrogen",group:15,period:2,category:"nonmetal"},
+{number:8,symbol:"O",name:"Oxygen",group:16,period:2,category:"nonmetal"},
+{number:9,symbol:"F",name:"Fluorine",group:17,period:2,category:"halogen"},
+{number:10,symbol:"Ne",name:"Neon",group:18,period:2,category:"noble"},
+{number:11,symbol:"Na",name:"Sodium",group:1,period:3,category:"alkali"},
+{number:12,symbol:"Mg",name:"Magnesium",group:2,period:3,category:"alkaline"},
+{number:13,symbol:"Al",name:"Aluminium",group:13,period:3,category:"othermetal"},
+{number:14,symbol:"Si",name:"Silicon",group:14,period:3,category:"metalloid"},
+{number:15,symbol:"P",name:"Phosphorus",group:15,period:3,category:"nonmetal"},
+{number:16,symbol:"S",name:"Sulfur",group:16,period:3,category:"nonmetal"},
+{number:17,symbol:"Cl",name:"Chlorine",group:17,period:3,category:"halogen"},
+{number:18,symbol:"Ar",name:"Argon",group:18,period:3,category:"noble"},
+{number:19,symbol:"K",name:"Potassium",group:1,period:4,category:"alkali"},
+{number:20,symbol:"Ca",name:"Calcium",group:2,period:4,category:"alkaline"},
+{number:21,symbol:"Sc",name:"Scandium",group:3,period:4,category:"transition"},
+{number:22,symbol:"Ti",name:"Titanium",group:4,period:4,category:"transition"},
+{number:23,symbol:"V",name:"Vanadium",group:5,period:4,category:"transition"},
+{number:24,symbol:"Cr",name:"Chromium",group:6,period:4,category:"transition"},
+{number:25,symbol:"Mn",name:"Manganese",group:7,period:4,category:"transition"},
+{number:26,symbol:"Fe",name:"Iron",group:8,period:4,category:"transition"},
+{number:27,symbol:"Co",name:"Cobalt",group:9,period:4,category:"transition"},
+{number:28,symbol:"Ni",name:"Nickel",group:10,period:4,category:"transition"},
+{number:29,symbol:"Cu",name:"Copper",group:11,period:4,category:"transition"},
+{number:30,symbol:"Zn",name:"Zinc",group:12,period:4,category:"transition"},
+{number:31,symbol:"Ga",name:"Gallium",group:13,period:4,category:"othermetal"},
+{number:32,symbol:"Ge",name:"Germanium",group:14,period:4,category:"metalloid"},
+{number:33,symbol:"As",name:"Arsenic",group:15,period:4,category:"metalloid"},
+{number:34,symbol:"Se",name:"Selenium",group:16,period:4,category:"nonmetal"},
+{number:35,symbol:"Br",name:"Bromine",group:17,period:4,category:"halogen"},
+{number:36,symbol:"Kr",name:"Krypton",group:18,period:4,category:"noble"},
+{number:37,symbol:"Rb",name:"Rubidium",group:1,period:5,category:"alkali"},
+{number:38,symbol:"Sr",name:"Strontium",group:2,period:5,category:"alkaline"},
+{number:39,symbol:"Y",name:"Yttrium",group:3,period:5,category:"transition"},
+{number:40,symbol:"Zr",name:"Zirconium",group:4,period:5,category:"transition"},
+{number:41,symbol:"Nb",name:"Niobium",group:5,period:5,category:"transition"},
+{number:42,symbol:"Mo",name:"Molybdenum",group:6,period:5,category:"transition"},
+{number:43,symbol:"Tc",name:"Technetium",group:7,period:5,category:"transition"},
+{number:44,symbol:"Ru",name:"Ruthenium",group:8,period:5,category:"transition"},
+{number:45,symbol:"Rh",name:"Rhodium",group:9,period:5,category:"transition"},
+{number:46,symbol:"Pd",name:"Palladium",group:10,period:5,category:"transition"},
+{number:47,symbol:"Ag",name:"Silver",group:11,period:5,category:"transition"},
+{number:48,symbol:"Cd",name:"Cadmium",group:12,period:5,category:"transition"},
+{number:49,symbol:"In",name:"Indium",group:13,period:5,category:"othermetal"},
+{number:50,symbol:"Sn",name:"Tin",group:14,period:5,category:"othermetal"},
+{number:51,symbol:"Sb",name:"Antimony",group:15,period:5,category:"metalloid"},
+{number:52,symbol:"Te",name:"Tellurium",group:16,period:5,category:"metalloid"},
+{number:53,symbol:"I",name:"Iodine",group:17,period:5,category:"halogen"},
+{number:54,symbol:"Xe",name:"Xenon",group:18,period:5,category:"noble"},
+{number:55,symbol:"Cs",name:"Cesium",group:1,period:6,category:"alkali"},
+{number:56,symbol:"Ba",name:"Barium",group:2,period:6,category:"alkaline"},
+{number:57,symbol:"La",name:"Lanthanum",group:3,period:6,category:"lanthanoid"},
+{number:58,symbol:"Ce",name:"Cerium",group:4,period:9,category:"lanthanoid"},
+{number:59,symbol:"Pr",name:"Praseodymium",group:5,period:9,category:"lanthanoid"},
+{number:60,symbol:"Nd",name:"Neodymium",group:6,period:9,category:"lanthanoid"},
+{number:61,symbol:"Pm",name:"Promethium",group:7,period:9,category:"lanthanoid"},
+{number:62,symbol:"Sm",name:"Samarium",group:8,period:9,category:"lanthanoid"},
+{number:63,symbol:"Eu",name:"Europium",group:9,period:9,category:"lanthanoid"},
+{number:64,symbol:"Gd",name:"Gadolinium",group:10,period:9,category:"lanthanoid"},
+{number:65,symbol:"Tb",name:"Terbium",group:11,period:9,category:"lanthanoid"},
+{number:66,symbol:"Dy",name:"Dysprosium",group:12,period:9,category:"lanthanoid"},
+{number:67,symbol:"Ho",name:"Holmium",group:13,period:9,category:"lanthanoid"},
+{number:68,symbol:"Er",name:"Erbium",group:14,period:9,category:"lanthanoid"},
+{number:69,symbol:"Tm",name:"Thulium",group:15,period:9,category:"lanthanoid"},
+{number:70,symbol:"Yb",name:"Ytterbium",group:16,period:9,category:"lanthanoid"},
+{number:71,symbol:"Lu",name:"Lutetium",group:17,period:9,category:"lanthanoid"},
+{number:72,symbol:"Hf",name:"Hafnium",group:4,period:6,category:"transition"},
+{number:73,symbol:"Ta",name:"Tantalum",group:5,period:6,category:"transition"},
+{number:74,symbol:"W",name:"Tungsten",group:6,period:6,category:"transition"},
+{number:75,symbol:"Re",name:"Rhenium",group:7,period:6,category:"transition"},
+{number:76,symbol:"Os",name:"Osmium",group:8,period:6,category:"transition"},
+{number:77,symbol:"Ir",name:"Iridium",group:9,period:6,category:"transition"},
+{number:78,symbol:"Pt",name:"Platinum",group:10,period:6,category:"transition"},
+{number:79,symbol:"Au",name:"Gold",group:11,period:6,category:"transition"},
+{number:80,symbol:"Hg",name:"Mercury",group:12,period:6,category:"transition"},
+{number:81,symbol:"Tl",name:"Thallium",group:13,period:6,category:"othermetal"},
+{number:82,symbol:"Pb",name:"Lead",group:14,period:6,category:"othermetal"},
+{number:83,symbol:"Bi",name:"Bismuth",group:15,period:6,category:"othermetal"},
+{number:84,symbol:"Po",name:"Polonium",group:16,period:6,category:"metalloid"},
+{number:85,symbol:"At",name:"Astatine",group:17,period:6,category:"halogen"},
+{number:86,symbol:"Rn",name:"Radon",group:18,period:6,category:"noble"},
+{number:87,symbol:"Fr",name:"Francium",group:1,period:7,category:"alkali"},
+{number:88,symbol:"Ra",name:"Radium",group:2,period:7,category:"alkaline"},
+{number:89,symbol:"Ac",name:"Actinium",group:3,period:7,category:"actinoid"},
+{number:90,symbol:"Th",name:"Thorium",group:4,period:10,category:"actinoid"},
+{number:91,symbol:"Pa",name:"Protactinium",group:5,period:10,category:"actinoid"},
+{number:92,symbol:"U",name:"Uranium",group:6,period:10,category:"actinoid"},
+{number:93,symbol:"Np",name:"Neptunium",group:7,period:10,category:"actinoid"},
+{number:94,symbol:"Pu",name:"Plutonium",group:8,period:10,category:"actinoid"},
+{number:95,symbol:"Am",name:"Americium",group:9,period:10,category:"actinoid"},
+{number:96,symbol:"Cm",name:"Curium",group:10,period:10,category:"actinoid"},
+{number:97,symbol:"Bk",name:"Berkelium",group:11,period:10,category:"actinoid"},
+{number:98,symbol:"Cf",name:"Californium",group:12,period:10,category:"actinoid"},
+{number:99,symbol:"Es",name:"Einsteinium",group:13,period:10,category:"actinoid"},
+{number:100,symbol:"Fm",name:"Fermium",group:14,period:10,category:"actinoid"},
+{number:101,symbol:"Md",name:"Mendelevium",group:15,period:10,category:"actinoid"},
+{number:102,symbol:"No",name:"Nobelium",group:16,period:10,category:"actinoid"},
+{number:103,symbol:"Lr",name:"Lawrencium",group:17,period:10,category:"actinoid"},
+{number:104,symbol:"Rf",name:"Rutherfordium",group:4,period:7,category:"transition"},
+{number:105,symbol:"Db",name:"Dubnium",group:5,period:7,category:"transition"},
+{number:106,symbol:"Sg",name:"Seaborgium",group:6,period:7,category:"transition"},
+{number:107,symbol:"Bh",name:"Bohrium",group:7,period:7,category:"transition"},
+{number:108,symbol:"Hs",name:"Hassium",group:8,period:7,category:"transition"},
+{number:109,symbol:"Mt",name:"Meitnerium",group:9,period:7,category:"transition"},
+{number:110,symbol:"Ds",name:"Darmstadtium",group:10,period:7,category:"transition"},
+{number:111,symbol:"Rg",name:"Roentgenium",group:11,period:7,category:"transition"},
+{number:112,symbol:"Cn",name:"Copernicium",group:12,period:7,category:"transition"},
+{number:113,symbol:"Nh",name:"Nihonium",group:13,period:7,category:"othermetal"},
+{number:114,symbol:"Fl",name:"Flerovium",group:14,period:7,category:"othermetal"},
+{number:115,symbol:"Mc",name:"Moscovium",group:15,period:7,category:"othermetal"},
+{number:116,symbol:"Lv",name:"Livermorium",group:16,period:7,category:"othermetal"},
+{number:117,symbol:"Ts",name:"Tennessine",group:17,period:7,category:"halogen"},
+{number:118,symbol:"Og",name:"Oganesson",group:18,period:7,category:"noble"},
+];
+const table = document.getElementById("periodicTable");
+elements.forEach(el => {
+  const div = document.createElement("div");
+  div.className = `element ${el.category}`;
+  div.style.gridColumn = el.group;
+  div.style.gridRow = el.period;
+  div.setAttribute("data-name", el.name);
+  div.setAttribute("data-atomic", el.number);
+  div.innerHTML = `
+    <span class="number">${el.number}</span>
+    <span class="symbol">${el.symbol}</span>
+  `;
+  table.appendChild(div);
+});
+</script>
+</body>
+</html>
